@@ -46,12 +46,17 @@ pnpm-debug.log*
 pgsql/
 
 # ── Data files ────────────────────────────────────────────────────────────────
-# The source Excel dataset — large binary, not source code.
-# Share it out-of-band (e.g. cloud storage) and document the import steps.
+# Block stray Excel files everywhere, but allow the versioned data/ folder.
 *.xlsx
 *.xls
 ~$*.xlsx
 ~$*.xls
+!data/
+!data/**
+
+# ── Project meta ──────────────────────────────────────────────────────────────
+# Internal AI coding-assistant instructions — not relevant for collaborators.
+CLAUDE.md
 
 # ── Claude Code ──────────────────────────────────────────────────────────────
 .claude/
