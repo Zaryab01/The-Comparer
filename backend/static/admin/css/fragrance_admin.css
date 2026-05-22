@@ -1,0 +1,176 @@
+/*
+ * Fragrance Comparer — Django Admin custom theme
+ * Palette: brand-950 #2D1507 | brand-900 #6B4423 | brand-700 #8F5E41
+ *          brand-200 #E8D5C0 | brand-100 #F3E9DC | cream #FAF6F0
+ *          gold #C9A84C
+ */
+
+/* ── CSS variable overrides (Django 4.x+ admin) ──────────────────────────── */
+:root {
+  --primary:            #6B4423;
+  --secondary:          #8F5E41;
+  --accent:             #C9A84C;
+  --primary-fg:         #fff;
+
+  --body-bg:            #FAF6F0;
+  --body-fg:            #2D1507;
+  --body-quiet-color:   #8F5E41;
+  --body-loud-color:    #2D1507;
+
+  --header-color:       #fff;
+  --header-bg:          #6B4423;
+  --header-link-color:  #FAF6F0;
+
+  --breadcrumbs-fg:     #6B4423;
+  --breadcrumbs-link-fg:#6B4423;
+  --breadcrumbs-bg:     #E8D5C0;
+
+  --link-fg:            #6B4423;
+  --link-hover-color:   #2D1507;
+  --link-selected-fg:   #2D1507;
+
+  --hairline-color:     #E8D5C0;
+  --border-color:       #E8D5C0;
+
+  --error-fg:           #ba2121;
+
+  --message-success-bg: #dfd;
+  --message-warning-bg: #ffc;
+  --message-error-bg:   #ffefef;
+
+  --darkened-bg:        #F3E9DC;
+  --selected-bg:        #E8D5C0;
+  --selected-row:       #faf0e6;
+
+  --button-bg:          #6B4423;
+  --button-fg:          #fff;
+  --default-button-bg:  #C9A84C;
+  --default-button-fg:  #fff;
+  --close-button-bg:    #888;
+  --close-button-fg:    #fff;
+  --delete-button-bg:   #ba2121;
+  --delete-button-fg:   #fff;
+}
+
+/* ── Header ──────────────────────────────────────────────────────────────── */
+#header {
+  background: #6B4423;
+  color: #fff;
+  padding: 10px 20px;
+}
+
+#site-name a {
+  font-size: 1.3rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: #FAF6F0;
+  text-decoration: none;
+}
+
+#user-tools a {
+  color: #E8D5C0;
+  border-bottom: 1px solid transparent;
+}
+#user-tools a:hover { color: #fff; border-color: #C9A84C; }
+
+/* ── Breadcrumbs ─────────────────────────────────────────────────────────── */
+div.breadcrumbs {
+  background: #E8D5C0;
+  color: #6B4423;
+  padding: 8px 20px;
+  font-size: 0.82rem;
+}
+div.breadcrumbs a { color: #6B4423; }
+div.breadcrumbs a:hover { color: #2D1507; }
+
+/* ── Module / section headers ─────────────────────────────────────────────── */
+.module h2,
+.module caption,
+.inline-group h2,
+.inline-group > h2 {
+  background: #6B4423;
+  color: #fff;
+  font-size: 0.78rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 6px 10px;
+}
+
+/* ── App/model index cards ───────────────────────────────────────────────── */
+.app-catalog    > .module > caption { background: #6B4423; }
+.app-core       > .module > caption { background: #7D5132; }
+.app-similarity > .module > caption { background: #8F5E41; }
+
+/* ── Buttons ─────────────────────────────────────────────────────────────── */
+.button,
+input[type="submit"],
+input[type="button"],
+.submit-row input,
+a.button {
+  background: #6B4423;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  padding: 6px 14px;
+  cursor: pointer;
+}
+.button:hover,
+input[type="submit"]:hover { background: #2D1507; }
+
+.button.default,
+input[type="submit"].default,
+.submit-row input.default {
+  background: #C9A84C;
+  color: #fff;
+}
+.button.default:hover { background: #a88530; }
+
+.deletelink,
+.deletelink:link,
+.deletelink:visited { color: #ba2121; }
+
+/* ── Links ───────────────────────────────────────────────────────────────── */
+a:link, a:visited { color: #6B4423; }
+a:hover           { color: #2D1507; }
+
+/* ── Table rows ──────────────────────────────────────────────────────────── */
+#result_list tbody tr:hover { background: #faf0e6; }
+tr.selected { background: #F3E9DC; }
+
+/* ── Sidebar nav ─────────────────────────────────────────────────────────── */
+#nav-sidebar .module caption { background: #6B4423; }
+#nav-sidebar .current-app .section:link,
+#nav-sidebar .current-app .section:visited {
+  color: #6B4423;
+  font-weight: bold;
+}
+
+/* ── Filters ─────────────────────────────────────────────────────────────── */
+#changelist-filter h2    { background: #6B4423; color: #fff; }
+#changelist-filter h3    { color: #6B4423; font-size: 0.8rem; text-transform: uppercase; }
+#changelist-filter li.selected a { color: #C9A84C; font-weight: bold; }
+
+/* ── Inline groups ───────────────────────────────────────────────────────── */
+.inline-related h3 {
+  background: #F3E9DC;
+  color: #6B4423;
+  border-left: 4px solid #C9A84C;
+  padding: 4px 8px;
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* ── Dashboard shortcuts ─────────────────────────────────────────────────── */
+.dashboard #content-main a { color: #6B4423; }
+.dashboard #content-main a:hover { color: #2D1507; }
+
+/* ── Search bar ──────────────────────────────────────────────────────────── */
+#toolbar form input[type="text"],
+#searchbar { border-color: #E8D5C0; }
+#toolbar form input[type="text"]:focus { border-color: #C9A84C; outline: none; box-shadow: 0 0 0 2px #C9A84c44; }
+
+/* ── Paginator ───────────────────────────────────────────────────────────── */
+.paginator a:link,
+.paginator a:visited { color: #6B4423; }
+.paginator .this-page { color: #C9A84C; font-weight: bold; }

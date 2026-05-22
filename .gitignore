@@ -1,0 +1,77 @@
+# ── Python ────────────────────────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.so
+*.egg
+*.egg-info/
+dist/
+build/
+.eggs/
+.venv/
+venv/
+env/
+.Python
+
+# ── Django ────────────────────────────────────────────────────────────────────
+*.log
+local_settings.py
+db.sqlite3
+db.sqlite3-journal
+staticfiles/
+media/
+
+# ── Environment variables — NEVER commit ─────────────────────────────────────
+.env
+.env.local
+.env.*.local
+
+# ── Node / Frontend ───────────────────────────────────────────────────────────
+node_modules/
+# Portable Node.js runtime bundled locally — install Node from nodejs.org instead
+frontend/node/
+frontend/dist/
+frontend/.vite/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# ── PostgreSQL (portable local installation) ──────────────────────────────────
+# The entire pgsql/ folder contains the PostgreSQL server binaries (~500 MB),
+# pgAdmin, and the live database data files — none of this belongs in git.
+# To set up on a new machine: install PostgreSQL separately, point pg_ctl at
+# a fresh data directory, and restore from a pg_dump backup.
+pgsql/
+
+# ── Data files ────────────────────────────────────────────────────────────────
+# The source Excel dataset — large binary, not source code.
+# Share it out-of-band (e.g. cloud storage) and document the import steps.
+*.xlsx
+*.xls
+~$*.xlsx
+~$*.xls
+
+# ── Claude Code ──────────────────────────────────────────────────────────────
+.claude/
+
+# ── Editor / OS ───────────────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# ── Test / Coverage ───────────────────────────────────────────────────────────
+.coverage
+htmlcov/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# ── Distribution ──────────────────────────────────────────────────────────────
+*.tar.gz
+*.zip
