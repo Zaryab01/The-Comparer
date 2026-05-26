@@ -6,15 +6,29 @@ from rest_framework.response import Response
 from rest_framework.throttling import AnonRateThrottle
 from rest_framework.views import APIView
 
+from django.db.models import Q
+
 from .models import Note, Perfume
-from .serializers import NoteDetailSerializer, NoteSerializer, PerfumeDetailSerializer
+from .serializers import (
+    NoteDetailSerializer,
+    NoteSerializer,
+    PerfumeDetailSerializer,
+    PerfumeSearchSerializer,
+)
 
 AUTOCOMPLETE_LIMIT = 20
 AUTOCOMPLETE_MIN_SIMILARITY = 0.1
 
+PERFUME_SEARCH_LIMIT = 10
+PERFUME_SEARCH_MIN_SIMILARITY = 0.1
+
 
 class NoteAutocompleteThrottle(AnonRateThrottle):
     scope = "notes"
+
+
+class PerfumeSearchThrottle(AnonRateThrottle):
+    scope = "perfumes"
 
 
 class NoteAutocompleteView(APIView):
@@ -44,6 +58,34 @@ class NoteDetailView(APIView):
         except Note.DoesNotExist:
             raise NotFound(f"Note '{note_id}' not found.")
         return Response(NoteDetailSerializer(note).data)
+
+
+class PerfumeSearchView(APIView):
+    """GET /api/perfumes/?q=<query>  — search perfumes by name or brand.
+
+    Returns up to 10 lightweight results [{perfume_id, name, brand, release_year}].
+    Combines trigram similarity on name with ILIKE fallback on brand so users can
+    search either by fragrance name ("Aventus") or house ("Creed").
+    """
+
+    throttle_classes = [PerfumeSearchThrottle]
+
+    def get(self, request: Request) -> Response:
+        q = request.query_params.get("q", "").strip()
+        if len(q) < 2:
+            return Response([])
+
+        qs = (
+            Perfume.objects
+            .annotate(sim=TrigramSimilarity("name", q))
+            .filter(
+                Q(sim__gte=PERFUME_SEARCH_MIN_SIMILARITY)
+                | Q(name__icontains=q)
+                | Q(brand__icontains=q)
+            )
+            .order_by("-sim", "name")[:PERFUME_SEARCH_LIMIT]
+        )
+        return Response(PerfumeSearchSerializer(qs, many=True).data)
 
 
 class PerfumeDetailView(APIView):

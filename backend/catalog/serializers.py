@@ -36,6 +36,14 @@ class PerfumeNoteSerializer(serializers.ModelSerializer):
         fields = ["note_id", "name"]
 
 
+class PerfumeSearchSerializer(serializers.ModelSerializer):
+    """Lightweight — used for perfume search / autocomplete responses."""
+
+    class Meta:
+        model = Perfume
+        fields = ["perfume_id", "name", "brand", "release_year"]
+
+
 class PerfumeDetailSerializer(serializers.ModelSerializer):
     """Perfume with notes grouped by layer."""
 

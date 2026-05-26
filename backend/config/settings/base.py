@@ -106,5 +106,6 @@ REST_FRAMEWORK = {
         "anon": "60/min",
         "compare": "10/min",
         "notes": "60/min",
+        "perfumes": "60/min",
     },
 }

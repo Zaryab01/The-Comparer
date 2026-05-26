@@ -1,7 +1,8 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { compareFragrance } from "../api/compare";
 import { ApiError } from "../api/client";
 import { listGroups, listProfiles } from "../api/profiles";
+import { getPerfume, searchPerfumes } from "../api/perfumes";
 import NoteSelect from "../components/NoteSelect";
 import ResultCard from "../components/ResultCard";
 
@@ -16,11 +17,80 @@ export default function ComparePage() {
   const [middleNotes, setMiddleNotes] = useState([]);
   const [baseNotes,   setBaseNotes]   = useState([]);
 
-  // "Load from profile" selector
+  // ── Perfume database search ─────────────────────────────────────────────────
+  const [perfumeQuery,    setPerfumeQuery]    = useState("");
+  const [perfumeResults,  setPerfumeResults]  = useState([]);
+  const [perfumeSearching, setPerfumeSearching] = useState(false);
+  const [selectedPerfume, setSelectedPerfume] = useState(null);   // full detail obj
+  const [perfumeLoadErr,  setPerfumeLoadErr]  = useState(null);
+  const [showPfDropdown,  setShowPfDropdown]  = useState(false);
+  const pfSearchRef = useRef(null);
+
+  // Debounced search
+  useEffect(() => {
+    const q = perfumeQuery.trim();
+    if (q.length < 2) {
+      setPerfumeResults([]);
+      setShowPfDropdown(false);
+      return;
+    }
+    const timer = setTimeout(async () => {
+      setPerfumeSearching(true);
+      try {
+        const results = await searchPerfumes(q);
+        setPerfumeResults(results);
+        setShowPfDropdown(true);
+      } catch {
+        setPerfumeResults([]);
+      } finally {
+        setPerfumeSearching(false);
+      }
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [perfumeQuery]);
+
+  // Close dropdown on click outside
+  useEffect(() => {
+    function handleClickOutside(e) {
+      if (pfSearchRef.current && !pfSearchRef.current.contains(e.target)) {
+        setShowPfDropdown(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  async function handlePerfumeSelect(perfume) {
+    setShowPfDropdown(false);
+    setPerfumeQuery(`${perfume.name} — ${perfume.brand}`);
+    setPerfumeResults([]);
+    setPerfumeLoadErr(null);
+    try {
+      const detail = await getPerfume(perfume.perfume_id);
+      setTopNotes(detail.notes?.top       ?? []);
+      setMiddleNotes(detail.notes?.middle ?? []);
+      setBaseNotes(detail.notes?.base     ?? []);
+      setSelectedPerfume(detail);
+      setSelectedProfileId("");   // clear profile selector
+      document.getElementById("note-panels")?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    } catch {
+      setPerfumeLoadErr("Could not load this perfume's notes. Please try again.");
+    }
+  }
+
+  function clearPerfumeSearch() {
+    setPerfumeQuery("");
+    setPerfumeResults([]);
+    setSelectedPerfume(null);
+    setPerfumeLoadErr(null);
+    setShowPfDropdown(false);
+  }
+
+  // ── Load from saved profile ─────────────────────────────────────────────────
   const [profiles,          setProfiles]          = useState([]);
   const [selectedProfileId, setSelectedProfileId] = useState("");
 
-  // Target selection
+  // ── Target selection ────────────────────────────────────────────────────────
   const [target,  setTarget]  = useState("main"); // "main" | "group"
   const [groupId, setGroupId] = useState("");
   const [groups,  setGroups]  = useState([]);
@@ -35,7 +105,6 @@ export default function ComparePage() {
     [...topNotes, ...middleNotes, ...baseNotes].map((n) => [n.note_id, n.name])
   );
 
-  // Load groups and profiles for selectors
   useEffect(() => {
     listGroups().then(setGroups).catch(() => {});
     listProfiles().then(setProfiles).catch(() => {});
@@ -53,7 +122,7 @@ export default function ComparePage() {
     return (note_id) => setter((prev) => prev.filter((n) => n.note_id !== note_id));
   }
 
-  // ── Load from profile ───────────────────────────────────────────────────────
+  // ── Load from saved profile ─────────────────────────────────────────────────
   function handleProfileSelect(e) {
     const pid = e.target.value;
     setSelectedProfileId(pid);
@@ -63,7 +132,7 @@ export default function ComparePage() {
     setTopNotes(p.notes_by_layer?.top       ?? []);
     setMiddleNotes(p.notes_by_layer?.middle ?? []);
     setBaseNotes(p.notes_by_layer?.base     ?? []);
-    // Scroll the user's attention to the note panels
+    clearPerfumeSearch();   // clear perfume selector
     document.getElementById("note-panels")?.scrollIntoView({ behavior: "smooth", block: "nearest" });
   }
 
@@ -107,18 +176,17 @@ export default function ComparePage() {
   function handleClear() {
     setTopNotes([]); setMiddleNotes([]); setBaseNotes([]);
     setSelectedProfileId("");
+    clearPerfumeSearch();
     setResults(null); setError(null);
   }
 
   const selectedGroup   = groups.find((g) => String(g.id) === groupId);
   const selectedProfile = profiles.find((p) => String(p.id) === selectedProfileId);
 
-  // Group profiles by group for the optgroup select
   const profilesByGroupId = groups.reduce((acc, g) => {
     acc[g.id] = profiles.filter((p) => p.group?.id === g.id);
     return acc;
   }, {});
-  // Profiles not belonging to any listed group (edge case)
   const ungroupedProfiles = profiles.filter(
     (p) => !groups.some((g) => g.id === p.group?.id)
   );
@@ -132,85 +200,201 @@ export default function ComparePage() {
           Build your fragrance,<br className="hidden sm:block" /> find your match.
         </h2>
         <p className="text-brand-700 max-w-xl mx-auto leading-relaxed">
-          Select the notes you love — or the notes of a fragrance you're trying to
-          recreate — and we'll find the closest real perfumes in our database.
+          Select notes manually, search for an existing perfume, or load a saved
+          profile — then compare against our full catalogue or your own groups.
         </p>
       </section>
 
       {/* ── Form ── */}
       <form onSubmit={handleSubmit} className="flex flex-col gap-8">
 
-        {/* ── Load from saved profile (shown only if profiles exist) ── */}
-        {profiles.length > 0 && (
-          <div className="rounded-2xl border border-brand-200 bg-white p-4 shadow-sm flex flex-col gap-2">
-            <div className="flex items-center gap-2">
-              <span className="text-xs font-semibold text-brand-900 uppercase tracking-wide">
-                Start from a saved profile
-              </span>
-              <span className="text-xs text-brand-700/50">
-                — pre-fills the note panels below
-              </span>
-            </div>
+        {/* ── Pre-fill row: database search + saved profile ── */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
 
-            <div className="flex items-center gap-3">
-              <select
-                value={selectedProfileId}
-                onChange={handleProfileSelect}
-                className="flex-1 px-3 py-2 rounded-lg border border-brand-200 bg-white
-                           text-sm text-brand-950 focus:outline-none focus:border-gold
-                           focus:ring-1 focus:ring-gold transition-colors duration-150"
+          {/* Perfume database search */}
+          <div
+            ref={pfSearchRef}
+            className="relative rounded-2xl border border-brand-200 bg-white p-4 shadow-sm flex flex-col gap-2"
+          >
+            <span className="text-xs font-semibold text-brand-900 uppercase tracking-wide">
+              Search existing perfume
+            </span>
+            <p className="text-xs text-brand-700/50 -mt-1">
+              Pre-fills notes from any perfume in the database
+            </p>
+
+            {/* Input */}
+            <div className="relative">
+              {/* Search icon */}
+              <svg
+                className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-brand-700/40 pointer-events-none"
+                viewBox="0 0 20 20" fill="currentColor"
               >
-                <option value="">Select a profile…</option>
+                <path fillRule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clipRule="evenodd"/>
+              </svg>
 
-                {/* Profiles grouped by group name */}
-                {groups.map((g) => {
-                  const gProfiles = profilesByGroupId[g.id] ?? [];
-                  if (gProfiles.length === 0) return null;
-                  return (
-                    <optgroup key={g.id} label={g.name}>
-                      {gProfiles.map((p) => (
-                        <option key={p.id} value={String(p.id)}>
-                          {p.name} — {p.brand}
-                        </option>
-                      ))}
-                    </optgroup>
-                  );
-                })}
+              <input
+                type="text"
+                value={perfumeQuery}
+                onChange={(e) => {
+                  setPerfumeQuery(e.target.value);
+                  if (selectedPerfume) setSelectedPerfume(null); // reset on new typing
+                }}
+                onFocus={() => { if (perfumeResults.length > 0) setShowPfDropdown(true); }}
+                placeholder="e.g. Aventus, Bleu de Chanel…"
+                className="w-full pl-9 pr-8 py-2 rounded-lg border border-brand-200
+                           text-sm text-brand-950 placeholder:text-brand-700/40
+                           focus:outline-none focus:border-gold focus:ring-1 focus:ring-gold
+                           transition-colors duration-150"
+              />
 
-                {/* Ungrouped profiles fallback */}
-                {ungroupedProfiles.length > 0 && (
-                  <optgroup label="Other">
-                    {ungroupedProfiles.map((p) => (
-                      <option key={p.id} value={String(p.id)}>
-                        {p.name} — {p.brand}
-                      </option>
-                    ))}
-                  </optgroup>
-                )}
-              </select>
-
-              {selectedProfileId && (
+              {/* Clear button */}
+              {perfumeQuery && (
                 <button
                   type="button"
-                  onClick={() => setSelectedProfileId("")}
-                  title="Clear selection"
-                  className="text-brand-700/50 hover:text-brand-950 transition-colors shrink-0"
+                  onClick={clearPerfumeSearch}
+                  className="absolute right-2.5 top-1/2 -translate-y-1/2
+                             text-brand-700/40 hover:text-brand-950 transition-colors"
+                  title="Clear"
                 >
-                  <svg className="w-4 h-4" viewBox="0 0 20 20" fill="currentColor">
+                  <svg className="w-3.5 h-3.5" viewBox="0 0 20 20" fill="currentColor">
                     <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd"/>
                   </svg>
                 </button>
               )}
             </div>
 
-            {selectedProfile && (
+            {/* Dropdown */}
+            {showPfDropdown && (
+              <div className="absolute left-0 right-0 top-full mt-1 z-30
+                              bg-white border border-brand-200 rounded-xl shadow-xl
+                              max-h-60 overflow-y-auto">
+                {perfumeSearching && (
+                  <div className="flex items-center gap-2 px-4 py-3 text-sm text-brand-700/60">
+                    <span className="w-3.5 h-3.5 border-2 border-brand-200 border-t-brand-700 rounded-full animate-spin shrink-0" />
+                    Searching…
+                  </div>
+                )}
+
+                {!perfumeSearching && perfumeResults.length === 0 && (
+                  <p className="px-4 py-3 text-sm text-brand-700/50 italic">
+                    No perfumes found for &ldquo;{perfumeQuery}&rdquo;
+                  </p>
+                )}
+
+                {!perfumeSearching && perfumeResults.map((p) => (
+                  <button
+                    key={p.perfume_id}
+                    type="button"
+                    onClick={() => handlePerfumeSelect(p)}
+                    className="w-full text-left px-4 py-2.5 hover:bg-brand-50
+                               flex items-baseline justify-between gap-3
+                               border-b border-brand-100 last:border-0
+                               transition-colors duration-100"
+                  >
+                    <span className="text-sm font-medium text-brand-950 truncate">
+                      {p.name}
+                    </span>
+                    <span className="text-xs text-brand-700/50 shrink-0">
+                      {p.brand}{p.release_year ? ` · ${p.release_year}` : ""}
+                    </span>
+                  </button>
+                ))}
+              </div>
+            )}
+
+            {/* Status line */}
+            {perfumeLoadErr && (
+              <p className="text-xs text-red-600">{perfumeLoadErr}</p>
+            )}
+            {selectedPerfume && !showPfDropdown && (
               <p className="text-xs text-brand-700/50 italic">
-                Notes pre-filled from &ldquo;{selectedProfile.name}&rdquo; by {selectedProfile.brand}.
+                Notes pre-filled from &ldquo;{selectedPerfume.name}&rdquo; by {selectedPerfume.brand}.
                 You can still edit them below.
               </p>
             )}
           </div>
-        )}
+
+          {/* Load from saved profile */}
+          {profiles.length > 0 ? (
+            <div className="rounded-2xl border border-brand-200 bg-white p-4 shadow-sm flex flex-col gap-2">
+              <span className="text-xs font-semibold text-brand-900 uppercase tracking-wide">
+                Load saved profile
+              </span>
+              <p className="text-xs text-brand-700/50 -mt-1">
+                Pre-fills notes from one of your custom profiles
+              </p>
+
+              <div className="flex items-center gap-2 mt-0.5">
+                <select
+                  value={selectedProfileId}
+                  onChange={handleProfileSelect}
+                  className="flex-1 px-3 py-2 rounded-lg border border-brand-200 bg-white
+                             text-sm text-brand-950 focus:outline-none focus:border-gold
+                             focus:ring-1 focus:ring-gold transition-colors duration-150"
+                >
+                  <option value="">Select a profile…</option>
+                  {groups.map((g) => {
+                    const gProfiles = profilesByGroupId[g.id] ?? [];
+                    if (gProfiles.length === 0) return null;
+                    return (
+                      <optgroup key={g.id} label={g.name}>
+                        {gProfiles.map((p) => (
+                          <option key={p.id} value={String(p.id)}>
+                            {p.name} — {p.brand}
+                          </option>
+                        ))}
+                      </optgroup>
+                    );
+                  })}
+                  {ungroupedProfiles.length > 0 && (
+                    <optgroup label="Other">
+                      {ungroupedProfiles.map((p) => (
+                        <option key={p.id} value={String(p.id)}>
+                          {p.name} — {p.brand}
+                        </option>
+                      ))}
+                    </optgroup>
+                  )}
+                </select>
+
+                {selectedProfileId && (
+                  <button
+                    type="button"
+                    onClick={() => setSelectedProfileId("")}
+                    title="Clear selection"
+                    className="text-brand-700/40 hover:text-brand-950 transition-colors shrink-0"
+                  >
+                    <svg className="w-4 h-4" viewBox="0 0 20 20" fill="currentColor">
+                      <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd"/>
+                    </svg>
+                  </button>
+                )}
+              </div>
+
+              {selectedProfile && (
+                <p className="text-xs text-brand-700/50 italic">
+                  Notes pre-filled from &ldquo;{selectedProfile.name}&rdquo; by {selectedProfile.brand}.
+                  You can still edit them below.
+                </p>
+              )}
+            </div>
+          ) : (
+            /* Placeholder card when no profiles exist yet */
+            <div className="rounded-2xl border border-dashed border-brand-200 bg-brand-50/40
+                            p-4 flex flex-col gap-1 justify-center">
+              <span className="text-xs font-semibold text-brand-900 uppercase tracking-wide">
+                Load saved profile
+              </span>
+              <p className="text-xs text-brand-700/40 italic">
+                No profiles yet.{" "}
+                <a href="/profiles" className="underline underline-offset-2 text-brand-700 hover:text-brand-950">
+                  Create one in My Profiles →
+                </a>
+              </p>
+            </div>
+          )}
+        </div>
 
         {/* Note selectors */}
         <div id="note-panels" className="grid grid-cols-1 sm:grid-cols-3 gap-6">
