@@ -8,10 +8,16 @@ from rest_framework.views import APIView
 
 from django.db.models import Q
 
-from .models import Note, Perfume
+from .constants import (
+    BRAND_SEARCH_LIMIT,
+    FEATURED_BRANDS,
+    PER_BRAND_PAGE_SIZE,
+    brand_counts_qs,
+)
+from .models import Note, NoteAlias, Perfume
 from .serializers import (
     NoteDetailSerializer,
-    NoteSerializer,
+    PerfumeCardSerializer,
     PerfumeDetailSerializer,
     PerfumeSearchSerializer,
 )
@@ -32,7 +38,13 @@ class PerfumeSearchThrottle(AnonRateThrottle):
 
 
 class NoteAutocompleteView(APIView):
-    """GET /api/notes/?q=<query>  — trigram autocomplete, capped at 20 results."""
+    """GET /api/notes/?q=<query>  — trigram autocomplete over canonical note
+    names AND their aliases (synonyms).
+
+    Always returns canonical notes: [{note_id, name, matched_alias?}]. When the
+    match came via an alias rather than the canonical name, ``matched_alias`` is
+    the alias text (so the UI can hint e.g. "Agarwood → Oud"). Capped at 20.
+    """
 
     throttle_classes = [NoteAutocompleteThrottle]
 
@@ -41,12 +53,52 @@ class NoteAutocompleteView(APIView):
         if not q:
             return Response([])
 
-        qs = (
+        # Canonical name matches
+        note_matches = (
             Note.objects.annotate(similarity=TrigramSimilarity("name", q))
             .filter(similarity__gte=AUTOCOMPLETE_MIN_SIMILARITY)
-            .order_by("-similarity")[:AUTOCOMPLETE_LIMIT]
+            .order_by("-similarity")
+            .values_list("note_id", "name", "similarity")[:AUTOCOMPLETE_LIMIT]
         )
-        return Response(NoteSerializer(qs, many=True).data)
+
+        # Alias matches → resolve to the canonical note
+        alias_matches = (
+            NoteAlias.objects.annotate(similarity=TrigramSimilarity("alias_name", q))
+            .filter(similarity__gte=AUTOCOMPLETE_MIN_SIMILARITY)
+            .order_by("-similarity")
+            .values_list(
+                "note__note_id", "note__name", "alias_name", "similarity"
+            )[:AUTOCOMPLETE_LIMIT]
+        )
+
+        # Merge, deduping by canonical note_id and keeping the strongest match.
+        # A direct canonical-name hit always wins over an alias hit.
+        best: dict[str, dict] = {}
+        for note_id, name, sim in note_matches:
+            best[note_id] = {
+                "note_id": note_id,
+                "name": name,
+                "matched_alias": None,
+                "_sim": sim,
+            }
+        for note_id, name, alias_name, sim in alias_matches:
+            existing = best.get(note_id)
+            if existing is None or (
+                existing["matched_alias"] is not None and sim > existing["_sim"]
+            ):
+                best[note_id] = {
+                    "note_id": note_id,
+                    "name": name,
+                    "matched_alias": alias_name,
+                    "_sim": sim,
+                }
+
+        ranked = sorted(best.values(), key=lambda r: r["_sim"], reverse=True)[
+            :AUTOCOMPLETE_LIMIT
+        ]
+        for r in ranked:
+            r.pop("_sim", None)
+        return Response(ranked)
 
 
 class NoteDetailView(APIView):
@@ -63,7 +115,7 @@ class NoteDetailView(APIView):
 class PerfumeSearchView(APIView):
     """GET /api/perfumes/?q=<query>  — search perfumes by name or brand.
 
-    Returns up to 10 lightweight results [{perfume_id, name, brand, release_year}].
+    Returns up to 10 lightweight results [{perfume_id, name, brand}].
     Combines trigram similarity on name with ILIKE fallback on brand so users can
     search either by fragrance name ("Aventus") or house ("Creed").
     """
@@ -97,3 +149,59 @@ class PerfumeDetailView(APIView):
         except Perfume.DoesNotExist:
             raise NotFound(f"Perfume '{perfume_id}' not found.")
         return Response(PerfumeDetailSerializer(perfume).data)
+
+
+class BrandListView(APIView):
+    """GET /api/brands/?q=<query>  — brands with perfume counts, ranked by count.
+
+    With ?q= it searches brand names (for the multi-select dropdown); without it
+    returns the top brands. Ranking metric lives in catalog.constants.
+    Returns [{name, perfume_count}], capped at BRAND_SEARCH_LIMIT.
+    """
+
+    def get(self, request: Request) -> Response:
+        q = request.query_params.get("q", "").strip()
+        rows = brand_counts_qs(q or None)[:BRAND_SEARCH_LIMIT]
+        data = [{"name": r["brand"], "perfume_count": r["perfume_count"]} for r in rows]
+        return Response(data)
+
+
+class CatalogView(APIView):
+    """GET /api/catalog/?brands=<name,name,...>&page=<n>
+
+    Perfumes grouped by brand. With no `brands`, defaults to the curated
+    FEATURED_BRANDS. Each brand section is paginated uniformly by `page` at
+    PER_BRAND_PAGE_SIZE. Returns:
+        { page, page_size, groups: [{ brand, total, has_more, perfumes: [...] }] }
+    """
+
+    def get(self, request: Request) -> Response:
+        brands_param = request.query_params.get("brands", "").strip()
+        try:
+            page = max(1, int(request.query_params.get("page", 1)))
+        except (TypeError, ValueError):
+            page = 1
+
+        if brands_param:
+            brand_names = [b.strip() for b in brands_param.split(",") if b.strip()]
+        else:
+            brand_names = list(FEATURED_BRANDS)
+
+        offset = (page - 1) * PER_BRAND_PAGE_SIZE
+        groups = []
+        for name in brand_names:
+            qs = Perfume.objects.filter(brand=name).order_by("name")
+            total = qs.count()
+            perfumes = qs[offset:offset + PER_BRAND_PAGE_SIZE]
+            groups.append({
+                "brand": name,
+                "total": total,
+                "has_more": offset + PER_BRAND_PAGE_SIZE < total,
+                "perfumes": PerfumeCardSerializer(perfumes, many=True).data,
+            })
+
+        return Response({
+            "page": page,
+            "page_size": PER_BRAND_PAGE_SIZE,
+            "groups": groups,
+        })

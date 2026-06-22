@@ -4,21 +4,94 @@
 
 @layer base {
   body {
-    background-color: #FAF6F0;                     /* cream */
-    color: #6B4423;                                /* brand-900 */
-    font-family: ui-sans-serif, system-ui, -apple-system, sans-serif;
+    background-color: #000000;
+    color: #FAFAFA;
+    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
 
   *:focus-visible {
-    outline: 2px solid #C9A84C;                    /* gold */
+    outline: 2px solid #D7263D;
     outline-offset: 2px;
   }
 }
 
 @layer utilities {
-  /* Hide scrollbar while keeping scroll behaviour */
   .no-scrollbar::-webkit-scrollbar { display: none; }
   .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+}
+
+/* ============================================================================
+   Dark neon theme — plain (unlayered) CSS placed AFTER the Tailwind utilities
+   so these rules win over utility classes (e.g. bg-white / text-brand-*).
+   `.card-neon` = the shared panel/box; `.dropdown-dark` = popovers/menus.
+   ========================================================================== */
+
+/* ── Boxes / panels ───────────────────────────────────────────────────────── */
+.card-neon {
+  background-color: rgba(38, 38, 38, 0.8);          /* dark grey, 80% */
+  border: 1.5px solid #D7263D;                       /* neon red */
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.45),
+              0 0 6px rgba(215, 38, 61, 0.22);       /* low shadow + faint glow */
+  color: #FAFAFA;                                    /* default white text */
+}
+.card-neon:hover {
+  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.5),
+              0 0 10px rgba(215, 38, 61, 0.35);
+}
+
+/* Text inside boxes → white / light grey (semantic reds/golds/emeralds kept). */
+.card-neon .text-brand-950,
+.card-neon .text-brand-900,
+.card-neon .text-brand-800 { color: #FFFFFF; }
+.card-neon .text-brand-700 { color: #D4D4D4; }
+.card-neon .text-brand-300 { color: rgba(255, 255, 255, 0.45); }
+.card-neon [class*="text-brand-950/"],
+.card-neon [class*="text-brand-900/"],
+.card-neon [class*="text-brand-800/"],
+.card-neon [class*="text-brand-700/"] { color: rgba(255, 255, 255, 0.62); }
+
+/* Nested white/light surfaces inside boxes → translucent dark. */
+.card-neon .bg-white { background-color: rgba(255, 255, 255, 0.06); }
+.card-neon .bg-brand-50,
+.card-neon .bg-brand-100,
+.card-neon [class*="bg-brand-50/"] { background-color: rgba(255, 255, 255, 0.08); }
+
+/* Light grey borders inside boxes → faint white. */
+.card-neon .border-brand-100,
+.card-neon .border-brand-200,
+.card-neon .border-brand-300 { border-color: rgba(255, 255, 255, 0.18); }
+
+/* Native selects need an opaque dark fill (options popup inherits it). */
+.card-neon select,
+select.input-dark { background-color: #171717; color: #FFFFFF; }
+.card-neon select option,
+select.input-dark option { background-color: #171717; color: #FFFFFF; }
+
+/* Readable placeholders on the dark boxes. */
+.card-neon ::placeholder { color: rgba(255, 255, 255, 0.4); }
+
+/* ── Dropdowns / popovers / menus ─────────────────────────────────────────── */
+.dropdown-dark {
+  background-color: rgba(20, 20, 20, 0.97);
+  border: 1.5px solid #D7263D;
+  box-shadow: 0 14px 34px rgba(0, 0, 0, 0.6);
+  color: #FAFAFA;
+}
+.dropdown-dark .text-brand-950,
+.dropdown-dark .text-brand-900 { color: #FFFFFF; }
+.dropdown-dark .text-brand-800,
+.dropdown-dark [class*="text-brand-700"] { color: rgba(255, 255, 255, 0.65); }
+.dropdown-dark .border-brand-100,
+.dropdown-dark .border-brand-200 { border-color: rgba(255, 255, 255, 0.1); }
+
+/* Clean hover/active selection effect on dropdown options. */
+.dropdown-item {
+  transition: background-color 0.12s ease, color 0.12s ease;
+}
+.dropdown-item:hover,
+.dropdown-item.is-active {
+  background-color: rgba(215, 38, 61, 0.25);
+  color: #FFFFFF;
 }

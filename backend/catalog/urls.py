@@ -1,6 +1,13 @@
 from django.urls import path
 
-from .views import NoteAutocompleteView, NoteDetailView, PerfumeDetailView, PerfumeSearchView
+from .views import (
+    BrandListView,
+    CatalogView,
+    NoteAutocompleteView,
+    NoteDetailView,
+    PerfumeDetailView,
+    PerfumeSearchView,
+)
 
 urlpatterns = [
     path("notes/", NoteAutocompleteView.as_view(), name="note-autocomplete"),
@@ -8,4 +15,6 @@ urlpatterns = [
     # Perfume search must come before the <perfume_id> capture to avoid conflict
     path("perfumes/", PerfumeSearchView.as_view(), name="perfume-search"),
     path("perfumes/<str:perfume_id>/", PerfumeDetailView.as_view(), name="perfume-detail"),
+    path("brands/", BrandListView.as_view(), name="brand-list"),
+    path("catalog/", CatalogView.as_view(), name="catalog"),
 ]

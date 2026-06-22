@@ -15,7 +15,7 @@ const DEBOUNCE_MS = 250;
  *   onRemove: (note_id: string) => void,
  * }} props
  */
-export default function NoteSelect({ label, hint, selectedNotes, onAdd, onRemove }) {
+export default function NoteSelect({ label, hint, selectedNotes, onAdd, onRemove, dark = false }) {
   const [query, setQuery]             = useState("");
   const [suggestions, setSuggestions] = useState([]);
   const [open, setOpen]               = useState(false);
@@ -114,11 +114,11 @@ export default function NoteSelect({ label, hint, selectedNotes, onAdd, onRemove
     <div className="flex flex-col gap-2">
       {/* Label */}
       <div>
-        <span className="block font-serif text-sm font-semibold text-brand-900 tracking-wide uppercase">
+        <span className={`block font-serif text-sm font-semibold tracking-wide uppercase ${dark ? "text-white" : "text-brand-900"}`}>
           {label}
         </span>
         {hint && (
-          <span className="block text-xs text-brand-700 mt-0.5 italic">{hint}</span>
+          <span className={`block text-xs mt-0.5 italic ${dark ? "text-white/60" : "text-brand-700"}`}>{hint}</span>
         )}
       </div>
 
@@ -137,13 +137,13 @@ export default function NoteSelect({ label, hint, selectedNotes, onAdd, onRemove
 
       {/* Input + dropdown */}
       <div ref={containerRef} className="relative">
-        <div className="flex items-center gap-2 px-3 py-2 rounded-lg
-                        border border-brand-200 bg-white
+        <div className={`flex items-center gap-2 px-3 py-2 rounded-lg
                         focus-within:border-gold focus-within:ring-1 focus-within:ring-gold
-                        transition-colors duration-150">
+                        transition-colors duration-150
+                        ${dark ? "border border-white/25 bg-white/5" : "border border-brand-200 bg-white"}`}>
           {loading && (
-            <span className="w-3 h-3 border-2 border-brand-200 border-t-gold
-                             rounded-full animate-spin shrink-0" />
+            <span className={`w-3 h-3 border-2 rounded-full animate-spin shrink-0
+                             ${dark ? "border-white/20 border-t-white" : "border-brand-200 border-t-gold"}`} />
           )}
           <input
             ref={inputRef}
@@ -157,8 +157,8 @@ export default function NoteSelect({ label, hint, selectedNotes, onAdd, onRemove
                 ? `Search ${label.toLowerCase()} notes…`
                 : "Add more…"
             }
-            className="flex-1 bg-transparent text-sm text-brand-950
-                       placeholder-brand-700/50 outline-none min-w-0"
+            className={`flex-1 bg-transparent text-sm outline-none min-w-0
+                       ${dark ? "text-white placeholder-white/40" : "text-brand-950 placeholder-brand-700/50"}`}
             autoComplete="off"
             spellCheck={false}
           />
@@ -168,9 +168,8 @@ export default function NoteSelect({ label, hint, selectedNotes, onAdd, onRemove
         {open && suggestions.length > 0 && (
           <ul
             role="listbox"
-            className="absolute z-50 mt-1 w-full rounded-lg border border-brand-200
-                       bg-white shadow-lg overflow-auto max-h-56 no-scrollbar
-                       animate-fade-in"
+            className="absolute z-50 mt-1 w-full rounded-lg dropdown-dark
+                       overflow-auto max-h-56 no-scrollbar animate-fade-in"
           >
             {suggestions.map((note, idx) => (
               <li
@@ -179,12 +178,17 @@ export default function NoteSelect({ label, hint, selectedNotes, onAdd, onRemove
                 aria-selected={idx === activeIdx}
                 onMouseDown={(e) => { e.preventDefault(); selectNote(note); }}
                 onMouseEnter={() => setActiveIdx(idx)}
-                className={`px-3 py-2 text-sm cursor-pointer transition-colors duration-100
-                            ${idx === activeIdx
-                              ? "bg-brand-100 text-brand-950 font-medium"
-                              : "text-brand-800 hover:bg-brand-50"}`}
+                className={`px-3 py-2 text-sm cursor-pointer dropdown-item
+                            flex items-baseline justify-between gap-2
+                            ${idx === activeIdx ? "is-active font-medium" : "text-white/90"}`}
               >
-                {note.name}
+                <span className="truncate">{note.name}</span>
+                {note.matched_alias &&
+                  note.matched_alias.toLowerCase() !== note.name.toLowerCase() && (
+                    <span className="shrink-0 text-xs text-white/50 italic">
+                      {note.matched_alias} →
+                    </span>
+                  )}
               </li>
             ))}
           </ul>

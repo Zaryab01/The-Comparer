@@ -12,7 +12,6 @@ export default function ResultCard({ result, rank, noteNames }) {
   const {
     perfume_name,
     perfume_brand,
-    release_year,
     url,
     overall_score,
     top,
@@ -21,14 +20,14 @@ export default function ResultCard({ result, rank, noteNames }) {
   } = result;
 
   const scoreColor =
-    overall_score >= 70 ? "text-emerald-700" :
-    overall_score >= 40 ? "text-amber-700"   :
+    overall_score >= 70 ? "text-emerald-600" :
+    overall_score >= 40 ? "text-orange-500"  :
     "text-brand-700";
 
   return (
     <article
-      className="flex flex-col rounded-2xl border border-brand-200 bg-white
-                 shadow-sm hover:shadow-md transition-shadow duration-200
+      className="flex flex-col rounded-2xl card-neon
+                 transition-shadow duration-200
                  overflow-hidden animate-fade-in"
     >
       {/* Rank stripe */}
@@ -48,11 +47,9 @@ export default function ResultCard({ result, rank, noteNames }) {
               {perfume_name}
             </h3>
 
-            {/* Brand · Year */}
+            {/* Brand */}
             <p className="mt-1 text-sm text-brand-700">
               {perfume_brand && <span>{perfume_brand}</span>}
-              {perfume_brand && release_year && <span className="mx-1.5 opacity-40">·</span>}
-              {release_year && <span>{release_year}</span>}
             </p>
           </div>
 

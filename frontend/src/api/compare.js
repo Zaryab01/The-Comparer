@@ -16,7 +16,6 @@ import { apiFetch } from "./client";
  * @property {string}  perfume_id
  * @property {string}  perfume_name
  * @property {string|null} perfume_brand
- * @property {number|null} release_year
  * @property {string|null} url
  * @property {number}  overall_score
  * @property {LayerBreakdown|null} top
@@ -27,7 +26,7 @@ import { apiFetch } from "./client";
  * @param {string[]} top
  * @param {string[]} middle
  * @param {string[]} base
- * @param {{ target?: "main"|"group", group_id?: number }} [extra={}]
+ * @param {{ target?: "main"|"group", group_id?: number, brands?: string[] }} [extra={}]
  */
 export function compareFragrance(top, middle, base, extra = {}) {
   return apiFetch("/compare/", {

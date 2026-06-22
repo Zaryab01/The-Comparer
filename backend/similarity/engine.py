@@ -37,7 +37,6 @@ class MatchResult:
     perfume_id: str
     perfume_name: str
     perfume_brand: str | None
-    release_year: int | None
     url: str | None
     overall_score: float  # 0–100, already rounded
     top: LayerBreakdown | None
@@ -53,8 +52,8 @@ class MatchResult:
 class _Cache:
     # perfume DB pk → {layer → frozenset(note_id)}
     perfume_notes: dict[int, dict[str, frozenset[str]]]
-    # perfume DB pk → (perfume_id, name, brand, release_year, url)
-    perfume_meta: dict[int, tuple[str, str, str | None, int | None, str | None]]
+    # perfume DB pk → (perfume_id, name, brand, url)
+    perfume_meta: dict[int, tuple[str, str, str | None, str | None]]
     # note_id → IDF weight
     note_weights: dict[str, float]
     # fallback weight for notes absent from NoteFrequency (treated as freq=1)
@@ -99,9 +98,9 @@ def _build_cache() -> _Cache:
     }
 
     cache.perfume_meta = {
-        pk: (perfume_id, name, brand, release_year, url)
-        for pk, perfume_id, name, brand, release_year, url in Perfume.objects.values_list(
-            "id", "perfume_id", "name", "brand", "release_year", "url"
+        pk: (perfume_id, name, brand, url)
+        for pk, perfume_id, name, brand, url in Perfume.objects.values_list(
+            "id", "perfume_id", "name", "brand", "url"
         )
     }
 
@@ -175,7 +174,7 @@ def _score_all(
     Args:
         user_notes:    {layer: frozenset(note_id)} for the submitted fragrance.
         perfume_notes: {perfume_pk: {layer: frozenset(note_id)}} preloaded from DB.
-        perfume_meta:  {perfume_pk: (perfume_id, name, brand, release_year, url)}.
+        perfume_meta:  {perfume_pk: (perfume_id, name, brand, url)}.
         note_weights:  {note_id: float} IDF weights.
         default_weight: weight used for notes not in note_weights.
         layer_weights: override LAYER_WEIGHTS (used by tests with custom weights).
@@ -218,15 +217,14 @@ def _score_all(
 
     results: list[MatchResult] = []
     for overall, pk, layer_results in ranked[:limit]:
-        meta = perfume_meta.get(pk, ("", "", None, None, None))
-        perfume_id, name, brand, release_year, url = meta
+        meta = perfume_meta.get(pk, ("", "", None, None))
+        perfume_id, name, brand, url = meta
 
         results.append(
             MatchResult(
                 perfume_id=perfume_id,
                 perfume_name=name,
                 perfume_brand=brand,
-                release_year=release_year,
                 url=url,
                 overall_score=round(overall * 100, 1),
                 top=_make_breakdown(layer_results, "top"),
@@ -259,6 +257,7 @@ def compare(
     middle_ids: list[str],
     base_ids: list[str],
     limit: int = DEFAULT_COMPARE_LIMIT,
+    brand_names: list[str] | None = None,
 ) -> list[MatchResult]:
     """Return the top `limit` perfumes most similar to the submitted note combination.
 
@@ -267,6 +266,8 @@ def compare(
         middle_ids: List of Note.note_id strings for middle notes.
         base_ids:   List of Note.note_id strings for base notes.
         limit:      How many results to return (default 3).
+        brand_names: Optional list of exact brand strings. When given, only
+                     perfumes from those brands are scored; None/empty = all.
     """
     cache = _get_cache()
 
@@ -276,9 +277,16 @@ def compare(
         "base": frozenset(base_ids),
     }
 
+    perfume_notes = cache.perfume_notes
+    if brand_names:
+        wanted = set(brand_names)
+        # perfume_meta tuple is (perfume_id, name, brand, url) — brand at index 2
+        keep = {pk for pk, meta in cache.perfume_meta.items() if meta[2] in wanted}
+        perfume_notes = {pk: notes for pk, notes in cache.perfume_notes.items() if pk in keep}
+
     return _score_all(
         user_notes=user_notes,
-        perfume_notes=cache.perfume_notes,
+        perfume_notes=perfume_notes,
         perfume_meta=cache.perfume_meta,
         note_weights=cache.note_weights,
         default_weight=cache.default_weight,
@@ -329,8 +337,8 @@ def compare_against_group(
         for pn in p.profile_notes.all():
             layers[pn.layer].add(pn.note.note_id)
         profile_notes[p.pk] = {layer: frozenset(ids) for layer, ids in layers.items()}
-        # Match the (perfume_id, name, brand, release_year, url) tuple format
-        profile_meta[p.pk] = (f"profile-{p.pk}", p.name, p.brand, None, p.link or "")
+        # Match the (perfume_id, name, brand, url) tuple format
+        profile_meta[p.pk] = (f"profile-{p.pk}", p.name, p.brand, p.link or "")
 
     cache = _get_cache()
 

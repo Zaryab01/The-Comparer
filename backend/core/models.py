@@ -6,6 +6,7 @@ class ComparisonLog(models.Model):
     top_notes = models.JSONField(default=list)
     middle_notes = models.JSONField(default=list)
     base_notes = models.JSONField(default=list)
+    brand_filter = models.JSONField(null=True, blank=True)  # brand strings, if the user scoped the main search
     results = models.JSONField(default=list)
     duration_ms = models.IntegerField()
     ip_hash = models.CharField(max_length=64, null=True, blank=True)

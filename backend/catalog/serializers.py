@@ -41,7 +41,16 @@ class PerfumeSearchSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Perfume
-        fields = ["perfume_id", "name", "brand", "release_year"]
+        fields = ["perfume_id", "name", "brand"]
+
+
+class PerfumeCardSerializer(serializers.ModelSerializer):
+    """Catalog card — name, concentration, source link. Notes are loaded on
+    demand via the perfume-detail endpoint (the card's "View notes" button)."""
+
+    class Meta:
+        model = Perfume
+        fields = ["perfume_id", "name", "concentration", "url"]
 
 
 class PerfumeDetailSerializer(serializers.ModelSerializer):
@@ -55,7 +64,6 @@ class PerfumeDetailSerializer(serializers.ModelSerializer):
             "perfume_id",
             "name",
             "brand",
-            "release_year",
             "concentration",
             "url",
             "notes",

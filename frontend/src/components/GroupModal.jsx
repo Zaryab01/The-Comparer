@@ -56,7 +56,7 @@ export default function GroupModal({ onCreated, onClose, initialGroup = null }) 
       className="fixed inset-0 z-50 flex items-center justify-center bg-brand-950/40 backdrop-blur-sm"
       onMouseDown={(e) => { if (e.target === e.currentTarget) onClose(); }}
     >
-      <div className="bg-white rounded-2xl shadow-xl w-full max-w-sm mx-4 p-6 animate-fade-in">
+      <div className="card-neon rounded-2xl w-full max-w-sm mx-4 p-6 animate-fade-in">
         <h2 className="font-serif text-lg font-bold text-brand-950 mb-4">
           {isEdit ? "Edit group" : "Create a new group"}
         </h2>

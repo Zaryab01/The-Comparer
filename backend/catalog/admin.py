@@ -3,7 +3,7 @@ from django.db import models
 from django.db.models import Count, Q
 from django.utils.html import format_html
 
-from .models import Accord, AccordNote, Note, Perfume, PerfumeNote
+from .models import Accord, AccordNote, Note, NoteAlias, Perfume, PerfumeNote
 
 # ── Site branding ──────────────────────────────────────────────────────────────
 admin.site.site_header = "Fragrance Comparer"
@@ -34,34 +34,21 @@ class AccordNoteInline(admin.TabularInline):
     verbose_name_plural = "Accord mappings"
 
 
+class NoteAliasInline(admin.TabularInline):
+    model               = NoteAlias
+    extra               = 1
+    fields              = ["alias_name", "source"]
+    verbose_name        = "Alias"
+    verbose_name_plural = "Aliases (synonyms)"
+
+
 # ── Perfume ────────────────────────────────────────────────────────────────────
-
-class DecadeListFilter(admin.SimpleListFilter):
-    title         = "decade"
-    parameter_name = "decade"
-
-    def lookups(self, request, model_admin):
-        decades = (
-            model_admin.get_queryset(request)
-            .exclude(release_year__isnull=True)
-            .values_list("release_year", flat=True)
-            .distinct()
-        )
-        seen = sorted({(y // 10) * 10 for y in decades}, reverse=True)
-        return [(str(d), f"{d}s") for d in seen]
-
-    def queryset(self, request, queryset):
-        if self.value():
-            d = int(self.value())
-            return queryset.filter(release_year__gte=d, release_year__lt=d + 10)
-        return queryset
-
 
 @admin.register(Perfume)
 class PerfumeAdmin(admin.ModelAdmin):
-    list_display    = ["name", "brand", "release_year", "concentration",
+    list_display    = ["name", "brand", "concentration",
                        "top_count", "mid_count", "base_count", "parfumo_link"]
-    list_filter     = ["concentration", DecadeListFilter]
+    list_filter     = ["concentration"]
     search_fields   = ["name", "brand", "perfume_id"]
     readonly_fields = ["perfume_id", "parfumo_link"]
     inlines         = [PerfumeNoteInline]
@@ -73,7 +60,7 @@ class PerfumeAdmin(admin.ModelAdmin):
             "fields": ["perfume_id", "name", "brand"],
         }),
         ("Details", {
-            "fields": ["release_year", "concentration", "url", "parfumo_link"],
+            "fields": ["concentration", "url", "parfumo_link"],
         }),
     ]
 
@@ -111,9 +98,9 @@ class PerfumeAdmin(admin.ModelAdmin):
 
 @admin.register(Note)
 class NoteAdmin(admin.ModelAdmin):
-    list_display    = ["note_id", "name", "accord_list", "perfume_count"]
+    list_display    = ["note_id", "name", "accord_list", "alias_count", "perfume_count"]
     search_fields   = ["name", "note_id"]
-    inlines         = [AccordNoteInline]
+    inlines         = [NoteAliasInline, AccordNoteInline]
     list_per_page   = 100
     readonly_fields = ["note_id"]
     save_on_top     = True
@@ -127,13 +114,20 @@ class NoteAdmin(admin.ModelAdmin):
             super()
             .get_queryset(request)
             .prefetch_related("accord_notes__accord")
-            .annotate(_perfume_count=Count("perfume_notes", distinct=True))
+            .annotate(
+                _perfume_count=Count("perfume_notes", distinct=True),
+                _alias_count=Count("aliases", distinct=True),
+            )
         )
 
     @admin.display(description="Accords")
     def accord_list(self, obj):
         names = [an.accord.name for an in obj.accord_notes.all()]
         return ", ".join(names) if names else "—"
+
+    @admin.display(description="Aliases ♯", ordering="_alias_count")
+    def alias_count(self, obj):
+        return obj._alias_count
 
     @admin.display(description="Used in ♯ perfumes", ordering="_perfume_count")
     def perfume_count(self, obj):
@@ -187,3 +181,21 @@ class PerfumeNoteAdmin(admin.ModelAdmin):
     autocomplete_fields = ["perfume", "note"]
     list_per_page       = 100
     list_select_related = ["perfume", "note"]
+
+
+# ── NoteAlias ──────────────────────────────────────────────────────────────────
+
+@admin.register(NoteAlias)
+class NoteAliasAdmin(admin.ModelAdmin):
+    """View / add / update synonym → canonical-note mappings."""
+
+    list_display        = ["alias_name", "canonical_note", "source"]
+    list_filter         = ["source"]
+    search_fields       = ["alias_name", "note__name", "note__note_id"]
+    autocomplete_fields = ["note"]
+    list_per_page       = 100
+    list_select_related = ["note"]
+
+    @admin.display(description="Canonical note", ordering="note__name")
+    def canonical_note(self, obj):
+        return obj.note.name

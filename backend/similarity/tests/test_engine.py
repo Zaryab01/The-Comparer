@@ -24,7 +24,7 @@ def _uniform_weights(*note_ids: str, freq: int = 1) -> dict[str, float]:
 
 
 def _meta(pk: int, perfume_id: str = "", name: str = "Perfume") -> tuple:
-    return (perfume_id or f"P-{pk:06d}", name, None, None, None)
+    return (perfume_id or f"P-{pk:06d}", name, None, None)
 
 
 def _user(top=(), middle=(), base=()):
@@ -345,6 +345,49 @@ class TestMatchedNoteIds(unittest.TestCase):
         )
 
         self.assertEqual(results[0].base.matched_note_ids, ["AMBER", "OUD"])
+
+
+class TestBrandFilter(unittest.TestCase):
+    """compare(brand_names=...) restricts candidates to the given brands."""
+
+    def setUp(self):
+        from similarity import engine
+
+        self.engine = engine
+        cache = engine._Cache()
+        cache.note_weights = {"AMBER": idf_weight(1), "OUD": idf_weight(1)}
+        cache.default_weight = idf_weight(1)
+        cache.perfume_notes = {
+            pk: {"top": frozenset(), "middle": frozenset(),
+                 "base": frozenset({"AMBER", "OUD"})}
+            for pk in (1, 2, 3)
+        }
+        # meta tuple is (perfume_id, name, brand, url)
+        cache.perfume_meta = {
+            1: ("P-1", "Alpha", "Creed", None),
+            2: ("P-2", "Beta", "Dior", None),
+            3: ("P-3", "Gamma", "Creed", None),
+        }
+        self._saved = engine._cache
+        engine._cache = cache
+
+    def tearDown(self):
+        self.engine._cache = self._saved
+
+    def test_no_filter_scores_all_brands(self):
+        results = self.engine.compare([], [], ["AMBER", "OUD"], limit=10)
+        self.assertEqual({r.perfume_id for r in results}, {"P-1", "P-2", "P-3"})
+
+    def test_filter_restricts_to_selected_brand(self):
+        results = self.engine.compare(
+            [], [], ["AMBER", "OUD"], limit=10, brand_names=["Creed"]
+        )
+        self.assertEqual({r.perfume_id for r in results}, {"P-1", "P-3"})
+        self.assertTrue(all(r.perfume_brand == "Creed" for r in results))
+
+    def test_empty_brand_list_is_treated_as_no_filter(self):
+        results = self.engine.compare([], [], ["AMBER", "OUD"], limit=10, brand_names=[])
+        self.assertEqual(len(results), 3)
 
 
 if __name__ == "__main__":

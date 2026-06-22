@@ -159,10 +159,10 @@ export default function ProfileFormPage() {
   return (
     <main className="flex-1 max-w-3xl mx-auto w-full px-4 sm:px-6 py-10">
       <div className="mb-8">
-        <h2 className="font-serif text-3xl font-bold text-brand-950">
+        <h2 className="font-serif text-3xl font-bold text-white drop-shadow-lg">
           {isEdit ? "Edit Profile" : "New Profile"}
         </h2>
-        <p className="text-brand-700 mt-1 text-sm">
+        <p className="text-white/70 mt-1 text-sm drop-shadow">
           {isEdit
             ? "Update the fragrance profile's notes or details."
             : "Add a custom fragrance profile to compare against your main database or other groups."}
@@ -171,7 +171,7 @@ export default function ProfileFormPage() {
 
       <form onSubmit={handleSubmit} className="flex flex-col gap-8">
         {/* ── Identity ── */}
-        <section className="rounded-2xl border border-brand-200 bg-white p-6 shadow-sm flex flex-col gap-5">
+        <section className="rounded-2xl card-neon p-6 flex flex-col gap-5">
           <h3 className="font-serif text-base font-semibold text-brand-950 border-b border-brand-100 pb-2">
             Fragrance Identity
           </h3>
@@ -264,7 +264,7 @@ export default function ProfileFormPage() {
         </section>
 
         {/* ── Notes ── */}
-        <section className="rounded-2xl border border-brand-200 bg-white p-6 shadow-sm flex flex-col gap-5">
+        <section className="rounded-2xl card-neon p-6 flex flex-col gap-5">
           <h3 className="font-serif text-base font-semibold text-brand-950 border-b border-brand-100 pb-2">
             Fragrance Composition <span className="text-red-500 text-xs font-sans font-normal">* at least one note required</span>
           </h3>
@@ -277,6 +277,7 @@ export default function ProfileFormPage() {
                 selectedNotes={notes[key]}
                 onAdd={addNote(key)}
                 onRemove={removeNote(key)}
+                dark
               />
             ))}
           </div>
@@ -294,7 +295,7 @@ export default function ProfileFormPage() {
           <button
             type="button"
             onClick={() => navigate("/profiles")}
-            className="text-sm text-brand-700 hover:text-brand-950 underline underline-offset-2
+            className="text-sm text-white/70 hover:text-white underline underline-offset-2
                        transition-colors duration-150"
           >
             Cancel

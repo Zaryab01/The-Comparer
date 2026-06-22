@@ -44,13 +44,14 @@ class CompareView(APIView):
         base_ids:   list[str] = serializer.validated_data["base"]
         target:     str       = serializer.validated_data["target"]
         group_id:   int | None = serializer.validated_data.get("group_id")
+        brands:     list[str] = serializer.validated_data.get("brands") or []
 
         t0 = time.perf_counter()
 
         if target == "group" and group_id is not None:
             results = compare_against_group(top_ids, middle_ids, base_ids, group_id)
         else:
-            results = compare(top_ids, middle_ids, base_ids)
+            results = compare(top_ids, middle_ids, base_ids, brand_names=brands or None)
 
         duration_ms = int((time.perf_counter() - t0) * 1000)
 
@@ -60,6 +61,7 @@ class CompareView(APIView):
             top_notes=top_ids,
             middle_notes=middle_ids,
             base_notes=base_ids,
+            brand_filter=brands or None,
             results=payload["results"],
             duration_ms=duration_ms,
             ip_hash=_hash_ip(request),

@@ -47,12 +47,39 @@ class AccordNote(models.Model):
         return f"{self.note} → {self.accord} ({self.mapping_source})"
 
 
+class NoteAlias(models.Model):
+    """Alternate spelling/synonym that resolves to one canonical Note.
+
+    The autocomplete accepts either the alias or the canonical name but always
+    returns the canonical Note, so synonyms never cause a false mismatch in
+    similarity scoring.
+    """
+
+    alias_name = models.CharField(max_length=200, unique=True, db_index=True)
+    note = models.ForeignKey(Note, on_delete=models.CASCADE, related_name="aliases")
+    source = models.CharField(max_length=50, null=True, blank=True)
+
+    class Meta:
+        ordering = ["alias_name"]
+        verbose_name_plural = "Note aliases"
+        indexes = [
+            GinIndex(
+                fields=["alias_name"],
+                name="catalog_alias_name_gin",
+                opclasses=["gin_trgm_ops"],
+            ),
+        ]
+
+    def __str__(self) -> str:
+        return f"{self.alias_name} → {self.note.name}"
+
+
 class Perfume(models.Model):
     perfume_id = models.CharField(max_length=50, unique=True)
     name = models.CharField(max_length=500, db_index=True)
     brand = models.CharField(max_length=300, null=True, blank=True, db_index=True)
-    release_year = models.IntegerField(null=True, blank=True)
     concentration = models.CharField(max_length=100, null=True, blank=True)
+    main_accords = models.CharField(max_length=500, null=True, blank=True)  # denormalized display string
     url = models.URLField(max_length=1000, null=True, blank=True)
     notes = models.ManyToManyField(
         Note,

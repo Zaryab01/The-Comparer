@@ -27,8 +27,8 @@ function ProfileCard({ profile, onDeleted }) {
   const baseCount   = profile.notes_by_layer?.base?.length   ?? 0;
 
   return (
-    <div className="rounded-xl border border-brand-200 bg-white p-4 shadow-sm flex flex-col gap-3
-                    hover:border-brand-300 transition-colors duration-150">
+    <div className="rounded-xl card-neon p-4 flex flex-col gap-3
+                    transition-shadow duration-150">
       {/* Header */}
       <div className="flex items-start justify-between gap-2">
         <div className="min-w-0">
@@ -192,8 +192,8 @@ export default function ProfilesPage() {
       {/* ── Page header ── */}
       <div className="flex items-start justify-between gap-4">
         <div>
-          <h2 className="font-serif text-3xl font-bold text-brand-950">My Profiles</h2>
-          <p className="text-brand-700 mt-1 text-sm">
+          <h2 className="font-serif text-3xl font-bold text-white drop-shadow-lg">My Profiles</h2>
+          <p className="text-white/70 mt-1 text-sm drop-shadow">
             Custom fragrance profiles, organised into groups for intergroup comparison.
           </p>
         </div>
@@ -219,8 +219,8 @@ export default function ProfilesPage() {
         {/* Section header */}
         <div className="flex items-center justify-between">
           <div>
-            <h3 className="font-serif text-xl font-bold text-brand-950">My Groups</h3>
-            <p className="text-xs text-brand-700/60 mt-0.5">
+            <h3 className="font-serif text-xl font-bold text-white drop-shadow">My Groups</h3>
+            <p className="text-xs text-white/60 mt-0.5">
               {groups.length === 0
                 ? "No groups yet — create one to start organising profiles."
                 : `${groups.length} group${groups.length !== 1 ? "s" : ""} · ${totalProfiles} profile${totalProfiles !== 1 ? "s" : ""} total`}
@@ -239,13 +239,13 @@ export default function ProfilesPage() {
 
         {/* Empty state — no groups at all */}
         {!error && groups.length === 0 && (
-          <div className="flex flex-col items-center gap-4 py-16 text-brand-700/40 animate-fade-in">
+          <div className="flex flex-col items-center gap-4 py-16 text-white/50 animate-fade-in">
             <svg className="w-14 h-14 opacity-30" viewBox="0 0 48 48" fill="none" stroke="currentColor" strokeWidth="1.5">
               <rect x="6" y="10" width="36" height="28" rx="3" />
               <path d="M16 10V6M32 10V6M6 20h36" strokeLinecap="round" />
             </svg>
             <div className="text-center">
-              <p className="font-serif text-xl text-brand-700/60 mb-1">No groups yet</p>
+              <p className="font-serif text-xl text-white/70 mb-1">No groups yet</p>
               <p className="text-sm max-w-xs">
                 Start by creating a group, then add profiles to it for intergroup comparison.
               </p>
@@ -269,7 +269,7 @@ export default function ProfilesPage() {
           return (
             <div
               key={group.id}
-              className="rounded-2xl border border-brand-200 bg-white shadow-sm overflow-hidden"
+              className="rounded-2xl card-neon overflow-hidden"
             >
               {/* Group header */}
               <div className="flex items-start justify-between gap-3 px-5 py-4 border-b border-brand-100">

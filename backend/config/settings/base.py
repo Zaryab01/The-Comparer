@@ -25,6 +25,7 @@ DJANGO_APPS = [
 
 THIRD_PARTY_APPS = [
     "rest_framework",
+    "rest_framework.authtoken",
     "corsheaders",
 ]
 
@@ -33,6 +34,7 @@ LOCAL_APPS = [
     "catalog",
     "similarity",
     "profiles",
+    "dashboard",
 ]
 
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
@@ -107,5 +109,6 @@ REST_FRAMEWORK = {
         "compare": "10/min",
         "notes": "60/min",
         "perfumes": "60/min",
+        "admin_login": "10/min",
     },
 }

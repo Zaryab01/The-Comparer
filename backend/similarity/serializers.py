@@ -13,6 +13,10 @@ class CompareInputSerializer(serializers.Serializer):
     #         "group"          → search a profile group (group_id required)
     target   = serializers.ChoiceField(choices=["main", "group"], default="main")
     group_id = serializers.IntegerField(allow_null=True, required=False, default=None)
+    # Optional brand scope for the "main" target (exact brand strings).
+    brands   = serializers.ListField(
+        child=serializers.CharField(), required=False, default=list
+    )
 
     def validate(self, data: dict) -> dict:
         all_ids = data["top"] + data["middle"] + data["base"]
@@ -56,7 +60,6 @@ class MatchResultSerializer(serializers.Serializer):
     perfume_id    = serializers.CharField()
     perfume_name  = serializers.CharField()
     perfume_brand = serializers.CharField(allow_null=True)
-    release_year  = serializers.IntegerField(allow_null=True)
     url           = serializers.URLField(allow_null=True, allow_blank=True)
     overall_score = serializers.FloatField()
     top           = LayerBreakdownSerializer(allow_null=True)

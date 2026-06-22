@@ -2,7 +2,7 @@ import { apiFetch } from "./client";
 
 /**
  * Search perfumes by name or brand.
- * Returns [{perfume_id, name, brand, release_year}, …] capped at 10.
+ * Returns [{perfume_id, name, brand}, …] capped at 10.
  * @param {string} q
  */
 export function searchPerfumes(q) {
@@ -12,7 +12,7 @@ export function searchPerfumes(q) {
 
 /**
  * Fetch full perfume detail including notes grouped by layer.
- * Returns {perfume_id, name, brand, release_year, url, notes: {top, middle, base}}
+ * Returns {perfume_id, name, brand, url, notes: {top, middle, base}}
  * @param {string} perfumeId
  */
 export function getPerfume(perfumeId) {
