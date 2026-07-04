@@ -118,7 +118,7 @@ export default function BrandMultiSelect({ selected, onChange, placeholder = "Se
         <ul className="absolute z-50 mt-1 w-full rounded-lg dropdown-dark
                        overflow-auto max-h-64 animate-fade-in">
           {options.length === 0 && !loading && (
-            <li className="px-3 py-2.5 text-sm text-white/50 italic">No brands found</li>
+            <li className="px-3 py-2.5 text-sm text-brand-700/50 italic">No brands found</li>
           )}
           {options.map((b) => {
             const isSel = selected.includes(b.name);
@@ -132,7 +132,7 @@ export default function BrandMultiSelect({ selected, onChange, placeholder = "Se
                 >
                   <span
                     className={`w-4 h-4 rounded border flex items-center justify-center shrink-0
-                                ${isSel ? "bg-gold border-gold" : "border-white/40"}`}
+                                ${isSel ? "bg-brand-900 border-brand-900" : "border-brand-300"}`}
                   >
                     {isSel && (
                       <svg className="w-3 h-3 text-white" viewBox="0 0 20 20" fill="currentColor">
@@ -140,8 +140,8 @@ export default function BrandMultiSelect({ selected, onChange, placeholder = "Se
                       </svg>
                     )}
                   </span>
-                  <span className="flex-1 truncate text-white/90">{b.name}</span>
-                  <span className="text-xs text-white/50 shrink-0">{b.perfume_count}</span>
+                  <span className="flex-1 truncate text-brand-900">{b.name}</span>
+                  <span className="text-xs text-brand-700/50 shrink-0">{b.perfume_count}</span>
                 </button>
               </li>
             );

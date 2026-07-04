@@ -159,10 +159,10 @@ export default function ProfileFormPage() {
   return (
     <main className="flex-1 max-w-3xl mx-auto w-full px-4 sm:px-6 py-10">
       <div className="mb-8">
-        <h2 className="font-serif text-3xl font-bold text-white drop-shadow-lg">
-          {isEdit ? "Edit Profile" : "New Profile"}
+        <h2 className="font-serif text-3xl font-bold text-brand-950">
+          {isEdit ? "Edit Saved Perfume" : "New Saved Perfume"}
         </h2>
-        <p className="text-white/70 mt-1 text-sm drop-shadow">
+        <p className="text-brand-700 mt-1 text-sm">
           {isEdit
             ? "Update the fragrance profile's notes or details."
             : "Add a custom fragrance profile to compare against your main database or other groups."}
@@ -277,7 +277,6 @@ export default function ProfileFormPage() {
                 selectedNotes={notes[key]}
                 onAdd={addNote(key)}
                 onRemove={removeNote(key)}
-                dark
               />
             ))}
           </div>
@@ -295,7 +294,7 @@ export default function ProfileFormPage() {
           <button
             type="button"
             onClick={() => navigate("/profiles")}
-            className="text-sm text-white/70 hover:text-white underline underline-offset-2
+            className="text-sm text-brand-700 hover:text-brand-950 underline underline-offset-2
                        transition-colors duration-150"
           >
             Cancel

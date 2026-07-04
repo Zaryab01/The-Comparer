@@ -56,10 +56,10 @@ export default function CatalogPage() {
     <main className="flex-1 max-w-5xl mx-auto w-full px-4 sm:px-6 py-10 flex flex-col gap-8">
       {/* Hero */}
       <section className="text-center">
-        <h2 className="font-serif text-3xl sm:text-4xl font-bold text-white leading-tight mb-3 drop-shadow-lg">
-          Browse the catalogue
+        <h2 className="font-serif text-3xl sm:text-4xl font-bold text-brand-950 leading-tight mb-3">
+          External Brands Database
         </h2>
-        <p className="text-white/70 max-w-xl mx-auto leading-relaxed drop-shadow">
+        <p className="text-brand-700 max-w-xl mx-auto leading-relaxed">
           Explore perfumes grouped by brand. Search and tick brands to focus the
           list, or browse the most-stocked houses by default.
         </p>
@@ -70,7 +70,7 @@ export default function CatalogPage() {
         <span className="text-xs font-semibold text-brand-900 uppercase tracking-wide">
           Filter by brand
         </span>
-        <BrandMultiSelect selected={selected} onChange={setSelected} dark />
+        <BrandMultiSelect selected={selected} onChange={setSelected} />
         <p className="text-xs text-brand-700/50">
           {isDefault
             ? "Showing featured brands. Search and tick to pick your own."
@@ -86,8 +86,8 @@ export default function CatalogPage() {
       )}
 
       {loading && (
-        <div className="flex items-center justify-center gap-2 py-16 text-white/70">
-          <span className="w-4 h-4 border-2 border-white/20 border-t-white rounded-full animate-spin" />
+        <div className="flex items-center justify-center gap-2 py-16 text-brand-700/60">
+          <span className="w-4 h-4 border-2 border-brand-200 border-t-brand-700 rounded-full animate-spin" />
           Loading catalogue…
         </div>
       )}
@@ -95,15 +95,15 @@ export default function CatalogPage() {
       {/* Brand sections */}
       {!loading && groups.map((g) => (
         <section key={g.brand} className="flex flex-col gap-4">
-          <div className="flex items-baseline justify-between gap-3 border-b border-white/15 pb-2">
-            <h3 className="font-serif text-xl font-bold text-white drop-shadow">{g.brand}</h3>
-            <span className="text-sm text-white/50 shrink-0">
+          <div className="flex items-baseline justify-between gap-3 border-b border-brand-200 pb-2">
+            <h3 className="font-serif text-xl font-bold text-brand-950">{g.brand}</h3>
+            <span className="text-sm text-brand-700/50 shrink-0">
               {g.total} perfume{g.total !== 1 ? "s" : ""}
             </span>
           </div>
 
           {g.perfumes.length === 0 ? (
-            <p className="text-sm text-white/50 italic">No perfumes for this brand.</p>
+            <p className="text-sm text-brand-700/50 italic">No perfumes for this brand.</p>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
               {g.perfumes.map((p) => (
@@ -120,13 +120,13 @@ export default function CatalogPage() {
             type="button"
             onClick={loadMore}
             disabled={loadingMore}
-            className="inline-flex items-center gap-2 px-6 py-2.5 rounded-full border border-white/30
-                       text-sm font-semibold text-white hover:bg-white/10 active:scale-95
+            className="inline-flex items-center gap-2 px-6 py-2.5 rounded-full border border-brand-300
+                       text-sm font-semibold text-brand-900 hover:bg-brand-50 active:scale-95
                        disabled:opacity-40 transition-all duration-150"
           >
             {loadingMore ? (
               <>
-                <span className="w-4 h-4 border-2 border-white/20 border-t-white rounded-full animate-spin" />
+                <span className="w-4 h-4 border-2 border-brand-200 border-t-brand-700 rounded-full animate-spin" />
                 Loading…
               </>
             ) : "Load more"}
@@ -135,7 +135,7 @@ export default function CatalogPage() {
       )}
 
       {!loading && groups.length === 0 && !error && (
-        <p className="text-center text-white/60 py-16">No brands to show.</p>
+        <p className="text-center text-brand-700/50 py-16">No brands to show.</p>
       )}
     </main>
   );

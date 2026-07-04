@@ -4,8 +4,8 @@
 
 @layer base {
   body {
-    background-color: #000000;
-    color: #FAFAFA;
+    background-color: #FFFFFF;
+    color: #0A0A0A;
     font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
@@ -23,75 +23,78 @@
 }
 
 /* ============================================================================
-   Dark neon theme — plain (unlayered) CSS placed AFTER the Tailwind utilities
-   so these rules win over utility classes (e.g. bg-white / text-brand-*).
-   `.card-neon` = the shared panel/box; `.dropdown-dark` = popovers/menus.
+   Light theme (default). The dark / PrismaticBurst theme lives in git history
+   and PrismaticBurst.jsx is kept in the codebase — flip SHOW_BURST in
+   components/Layout.jsx to bring the animated background back.
+   `.card-neon` (boxes) and `.dropdown-dark` (menus) keep their class names so
+   the markup doesn't need to change between themes.
    ========================================================================== */
 
-/* ── Boxes / panels ───────────────────────────────────────────────────────── */
+/* Darker, more readable subtext OUTSIDE boxes (muted greys on the white page).
+   Inside .card-neon this is overridden to a light tone below. */
+.text-brand-700,
+[class*="text-brand-700/"] { color: #2b2b2b; }
+.text-brand-300,
+[class*="text-brand-300/"] { color: #4a4a4a; }
+
+/* ── Boxes / panels — charcoal with white text + a low-shine neon-red border ── */
 .card-neon {
-  background-color: rgba(38, 38, 38, 0.8);          /* dark grey, 80% */
-  border: 1.5px solid #D7263D;                       /* neon red */
-  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.45),
-              0 0 6px rgba(215, 38, 61, 0.22);       /* low shadow + faint glow */
-  color: #FAFAFA;                                    /* default white text */
+  background-color: #2b2b2b;                 /* charcoal */
+  color: #FAFAFA;                            /* default white text */
+  border: 1px solid #5a0d16;
+  box-shadow: 0 0 6px rgba(215, 38, 61, 0.22);
 }
 .card-neon:hover {
-  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.5),
-              0 0 10px rgba(215, 38, 61, 0.35);
+  box-shadow: 0 0 10px rgba(215, 38, 61, 0.32);
 }
 
-/* Text inside boxes → white / light grey (semantic reds/golds/emeralds kept). */
+/* Flip dark utility text to light INSIDE boxes (scoped → beats globals above). */
 .card-neon .text-brand-950,
 .card-neon .text-brand-900,
 .card-neon .text-brand-800 { color: #FFFFFF; }
-.card-neon .text-brand-700 { color: #D4D4D4; }
-.card-neon .text-brand-300 { color: rgba(255, 255, 255, 0.45); }
-.card-neon [class*="text-brand-950/"],
-.card-neon [class*="text-brand-900/"],
-.card-neon [class*="text-brand-800/"],
-.card-neon [class*="text-brand-700/"] { color: rgba(255, 255, 255, 0.62); }
+.card-neon .text-brand-700,
+.card-neon [class*="text-brand-700/"] { color: rgba(255, 255, 255, 0.72); }
+.card-neon .text-brand-300,
+.card-neon [class*="text-brand-300/"] { color: rgba(255, 255, 255, 0.5); }
 
-/* Nested white/light surfaces inside boxes → translucent dark. */
-.card-neon .bg-white { background-color: rgba(255, 255, 255, 0.06); }
+/* Inputs / selects inside boxes → translucent dark with white text. */
+.card-neon input,
+.card-neon select,
+.card-neon textarea {
+  background-color: rgba(255, 255, 255, 0.08);
+  color: #FFFFFF;
+  border-color: rgba(255, 255, 255, 0.25);
+}
+.card-neon ::placeholder { color: rgba(255, 255, 255, 0.45); }
+.card-neon select option { background-color: #2b2b2b; color: #FFFFFF; }
+
+/* Nested light surfaces / borders inside boxes → subtle translucent white. */
+.card-neon .bg-white,
 .card-neon .bg-brand-50,
 .card-neon .bg-brand-100,
-.card-neon [class*="bg-brand-50/"] { background-color: rgba(255, 255, 255, 0.08); }
-
-/* Light grey borders inside boxes → faint white. */
+.card-neon [class*="bg-brand-50/"] { background-color: rgba(255, 255, 255, 0.10); }
 .card-neon .border-brand-100,
 .card-neon .border-brand-200,
 .card-neon .border-brand-300 { border-color: rgba(255, 255, 255, 0.18); }
 
-/* Native selects need an opaque dark fill (options popup inherits it). */
-.card-neon select,
-select.input-dark { background-color: #171717; color: #FFFFFF; }
-.card-neon select option,
-select.input-dark option { background-color: #171717; color: #FFFFFF; }
-
-/* Readable placeholders on the dark boxes. */
-.card-neon ::placeholder { color: rgba(255, 255, 255, 0.4); }
-
-/* ── Dropdowns / popovers / menus ─────────────────────────────────────────── */
+/* ── Dropdowns / popovers / menus — charcoal to match the boxes ────────────── */
 .dropdown-dark {
-  background-color: rgba(20, 20, 20, 0.97);
-  border: 1.5px solid #D7263D;
-  box-shadow: 0 14px 34px rgba(0, 0, 0, 0.6);
+  background-color: #262626;
+  border: 1px solid #5a0d16;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.45);
   color: #FAFAFA;
 }
 .dropdown-dark .text-brand-950,
-.dropdown-dark .text-brand-900 { color: #FFFFFF; }
-.dropdown-dark .text-brand-800,
+.dropdown-dark .text-brand-900,
+.dropdown-dark .text-brand-800 { color: #FFFFFF; }
 .dropdown-dark [class*="text-brand-700"] { color: rgba(255, 255, 255, 0.65); }
 .dropdown-dark .border-brand-100,
-.dropdown-dark .border-brand-200 { border-color: rgba(255, 255, 255, 0.1); }
-
-/* Clean hover/active selection effect on dropdown options. */
+.dropdown-dark .border-brand-200 { border-color: rgba(255, 255, 255, 0.12); }
 .dropdown-item {
   transition: background-color 0.12s ease, color 0.12s ease;
 }
 .dropdown-item:hover,
 .dropdown-item.is-active {
-  background-color: rgba(215, 38, 61, 0.25);
+  background-color: rgba(215, 38, 61, 0.30);
   color: #FFFFFF;
 }

@@ -192,9 +192,9 @@ export default function ProfilesPage() {
       {/* ── Page header ── */}
       <div className="flex items-start justify-between gap-4">
         <div>
-          <h2 className="font-serif text-3xl font-bold text-white drop-shadow-lg">My Profiles</h2>
-          <p className="text-white/70 mt-1 text-sm drop-shadow">
-            Custom fragrance profiles, organised into groups for intergroup comparison.
+          <h2 className="font-serif text-3xl font-bold text-brand-950">Saved Perfumes</h2>
+          <p className="text-brand-700 mt-1 text-sm">
+            Your saved perfumes, organised into groups for intergroup comparison.
           </p>
         </div>
         <Link
@@ -204,7 +204,7 @@ export default function ProfilesPage() {
                      shadow-sm hover:bg-brand-800 active:scale-95
                      transition-all duration-150 whitespace-nowrap shrink-0"
         >
-          + New Profile
+          + New Perfume
         </Link>
       </div>
 
@@ -219,8 +219,8 @@ export default function ProfilesPage() {
         {/* Section header */}
         <div className="flex items-center justify-between">
           <div>
-            <h3 className="font-serif text-xl font-bold text-white drop-shadow">My Groups</h3>
-            <p className="text-xs text-white/60 mt-0.5">
+            <h3 className="font-serif text-xl font-bold text-brand-950">My Groups</h3>
+            <p className="text-xs text-brand-700/60 mt-0.5">
               {groups.length === 0
                 ? "No groups yet — create one to start organising profiles."
                 : `${groups.length} group${groups.length !== 1 ? "s" : ""} · ${totalProfiles} profile${totalProfiles !== 1 ? "s" : ""} total`}
@@ -239,13 +239,13 @@ export default function ProfilesPage() {
 
         {/* Empty state — no groups at all */}
         {!error && groups.length === 0 && (
-          <div className="flex flex-col items-center gap-4 py-16 text-white/50 animate-fade-in">
+          <div className="flex flex-col items-center gap-4 py-16 text-brand-700/40 animate-fade-in">
             <svg className="w-14 h-14 opacity-30" viewBox="0 0 48 48" fill="none" stroke="currentColor" strokeWidth="1.5">
               <rect x="6" y="10" width="36" height="28" rx="3" />
               <path d="M16 10V6M32 10V6M6 20h36" strokeLinecap="round" />
             </svg>
             <div className="text-center">
-              <p className="font-serif text-xl text-white/70 mb-1">No groups yet</p>
+              <p className="font-serif text-xl text-brand-700/60 mb-1">No groups yet</p>
               <p className="text-sm max-w-xs">
                 Start by creating a group, then add profiles to it for intergroup comparison.
               </p>

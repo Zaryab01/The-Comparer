@@ -138,8 +138,8 @@ function AddAliasCard() {
             {results.map((n) => (
               <li key={n.note_id}>
                 <button type="button" onClick={() => selectNote(n)}
-                  className="w-full text-left px-4 py-2 dropdown-item text-sm text-white/90
-                             border-b border-white/10 last:border-0">
+                  className="w-full text-left px-4 py-2 dropdown-item text-sm text-brand-800
+                             border-b border-brand-100 last:border-0">
                   {n.name}
                 </button>
               </li>

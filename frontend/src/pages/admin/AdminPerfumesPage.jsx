@@ -170,9 +170,9 @@ export default function AdminPerfumesPage() {
               <li key={p.perfume_id}>
                 <button type="button" onClick={() => loadForEdit(p.perfume_id)}
                   className="w-full text-left px-4 py-2.5 dropdown-item flex justify-between gap-3
-                             border-b border-white/10 last:border-0">
-                  <span className="text-sm text-white truncate">{p.name}</span>
-                  <span className="text-xs text-white/50 shrink-0">{p.brand}</span>
+                             border-b border-brand-100 last:border-0">
+                  <span className="text-sm text-brand-950 truncate">{p.name}</span>
+                  <span className="text-xs text-brand-700/50 shrink-0">{p.brand}</span>
                 </button>
               </li>
             ))}
@@ -223,7 +223,7 @@ export default function AdminPerfumesPage() {
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
             {LAYER_META.map(({ key, label, hint }) => (
               <NoteSelect key={key} label={label} hint={hint}
-                selectedNotes={notes[key]} onAdd={addNote(key)} onRemove={removeNote(key)} dark />
+                selectedNotes={notes[key]} onAdd={addNote(key)} onRemove={removeNote(key)} />
             ))}
           </div>
         </section>

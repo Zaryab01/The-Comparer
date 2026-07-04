@@ -180,12 +180,12 @@ export default function NoteSelect({ label, hint, selectedNotes, onAdd, onRemove
                 onMouseEnter={() => setActiveIdx(idx)}
                 className={`px-3 py-2 text-sm cursor-pointer dropdown-item
                             flex items-baseline justify-between gap-2
-                            ${idx === activeIdx ? "is-active font-medium" : "text-white/90"}`}
+                            ${idx === activeIdx ? "is-active font-medium" : "text-brand-800"}`}
               >
                 <span className="truncate">{note.name}</span>
                 {note.matched_alias &&
                   note.matched_alias.toLowerCase() !== note.name.toLowerCase() && (
-                    <span className="shrink-0 text-xs text-white/50 italic">
+                    <span className="shrink-0 text-xs text-brand-700/50 italic">
                       {note.matched_alias} →
                     </span>
                   )}
